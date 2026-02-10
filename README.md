@@ -1,2 +1,2 @@
-# adani-project
-web sracping
+# internship_project
+Using plugin, backend-FastAPI, MongoDB Atlas

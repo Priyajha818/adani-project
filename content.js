@@ -73,55 +73,102 @@ function startRealtimeExtraction() {
     return charts;
   }
 
-  let latestData = {
-    text: extractCleanPageData(),
-    charts: extractGraphData(),
-  };
-  const observer = new MutationObserver(() => {
-    console.log("Mutation observer triggered.");
-      latestData = {
-        text: extractCleanPageData(),
-        charts: extractGraphData(),
+//   let latestData = {
+//     text: extractCleanPageData(),
+//     charts: extractGraphData(),
+//   };
+
+//   let debouncedTimer;
+
+//   const observer = new 
+//   MutationObserver(() => {
+//     console.log("Mutation observer triggered.");
+
+//     clearTimeout(debouncedTimer);
+
+//     debouncedTimer = setTimeout(() => {
+//       latestData = {
+//         text: extractCleanPageData(),
+//         charts: extractGraphData(),
+//     };
+//     console.log("Updated data:", latestData);
+//   });
+
+//   const payload = {
+//     url: window.location.href,
+//     title: document.title,
+//     extraction_type: "full_page",
+//     full_text: latestData.text.join("\n"),
+//     structured_data: {
+//       lists: [latestData.text],
+//       tables: [],
+//     },
+//     graph_data: latestData.charts,
+//     metadata: {
+//       headings: [],
+//       links: [],
+//       images: [],
+//     },
+//   };
+
+//   console.log("Sending payload to backend:", payload);
+
+//   // const result = startRealtimeExtraction();
+
+//   chrome.runtime.sendMessage({
+//     type: "SEND_TO_BACKEND",
+//     extracteddata: payload,
+//   });
+
+//   return {
+//     status: "real-time extraction started",
+//     data: latestData,
+//   };
+// }
+// startRealtimeExtraction();
+
+let latestData = {
+  text: extractCleanPageData(),
+  charts: extractGraphData(),
+};
+
+let debounceTimer;
+
+const observer = new MutationObserver(() => {
+  console.log("Mutation observer triggered.");
+
+  clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(() => {
+    latestData = {
+      text: extractCleanPageData(),
+      charts: extractGraphData(),
     };
-    console.log("Updated data:", latestData);
-  });
 
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
+    const payload = {
+      url: window.location.href,
+      title: document.title,
+      extraction_type: "full_page",
+      full_text: latestData.text.join("\n"),
+      structured_data: {
+        lists: [latestData.text],
+        tables: [],
+      },
+      graph_data: latestData.charts,
+      metadata: {
+        headings: [],
+        links: [],
+        images: [],
+      },
+    };
 
-  const payload = {
-    url: window.location.href,
-    title: document.title,
-    extraction_type: "full_page",
-    full_text: latestData.text.join("\n"),
-    structured_data: {
-      lists: [latestData.text],
-      tables: [],
-    },
-    graph_data: latestData.charts,
-    metadata: {
-      headings: [],
-      links: [],
-      images: [],
-    },
-  };
+    console.log("Sending updated payload:", payload);
 
-  console.log("Sending payload to backend:", payload);
+    chrome.runtime.sendMessage({
+      type: "SEND_TO_BACKEND",
+      extracteddata: payload,
+    });
 
-  // const result = startRealtimeExtraction();
-
-  chrome.runtime.sendMessage({
-    type: "SEND_TO_BACKEND",
-    extracteddata: payload,
-  });
-
-  return {
-    status: "real-time extraction started",
-    data: latestData,
-  };
-}
-startRealtimeExtraction();
+  }, 2000);
+})
+};
